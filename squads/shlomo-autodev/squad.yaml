@@ -1,0 +1,15 @@
+name: "Shlomo Auto-Dev"
+description: "Squad autônoma que desenvolve features do Shlomo Ledger automaticamente baseado em roadmap pré-definido"
+icon: 🤖
+
+pipeline:
+  - id: analyze-roadmap
+    name: "Analisar Roadmap e Escolher Próxima Feature"
+  - id: design-architecture
+    name: "Desenhar Arquitetura da Feature"
+  - id: implement-code
+    name: "Implementar Código"
+  - id: test-validate
+    name: "Testar e Validar Qualidade"
+  - id: commit-deploy
+    name: "Commit e Deploy Automático"

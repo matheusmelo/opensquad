@@ -1,0 +1,5 @@
+agent_path,role,name
+agents/tech-lead.md,Tech Lead e Planejador,Tech Lead
+agents/senior-dev.md,Senior Developer Full-Stack,Senior Dev
+agents/qa-engineer.md,QA Engineer e Tester,QA Engineer
+agents/devops.md,DevOps e Automation,DevOps Engineer
