@@ -1,0 +1,22 @@
+# Railway Configuration
+
+[deploy]
+startCommand = "npm start"
+buildCommand = "npm run build"
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+
+[deploy.env]
+NODE_ENV = "production"
+ORCHESTRATOR_PORT = "3001"
+MAX_CONCURRENT_SQUADS = "5"
+WHATSAPP_SESSION_PATH = "/data/whatsapp-sessions"
+OPENSQUAD_BASE_PATH = "/app"
+
+[services.redis]
+name = "redis"
+type = "redis"
+
+[services.postgres]
+name = "postgres"
+type = "postgres"

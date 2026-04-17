@@ -1,0 +1,19 @@
+{
+  "$schema": "https://render.com/schema/deploy.json",
+  "buildCommand": "npm install && cd shlomo-ledger && npm install && npm run build",
+  "startCommand": "pm2 start deploy/ecosystem.config.js --no-daemon",
+  "envVars": [
+    {
+      "key": "NODE_ENV",
+      "value": "production"
+    },
+    {
+      "key": "ORCHESTRATOR_PORT",
+      "value": "3001"
+    },
+    {
+      "key": "MAX_CONCURRENT_SQUADS",
+      "value": "5"
+    }
+  ]
+}
