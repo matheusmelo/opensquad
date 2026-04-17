@@ -5,12 +5,40 @@ const OpenAI = require('openai');
 
 // Configuração
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const API_KEY = process.env.API_KEY || 'dev-key-change-in-production';
 const OPENSQUAD_BASE_PATH = process.env.OPENSQUAD_BASE_PATH || 'C:/inetpub/opensquad';
 const MAX_CONCURRENT_SQUADS = parseInt(process.env.MAX_CONCURRENT_SQUADS) || 3;
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 const app = express();
 app.use(express.json());
+
+// Importar rotas de webhooks
+const webhookRoutes = require('./routes/webhooks');
+app.use('/webhook', webhookRoutes);
+
+// Middleware de autenticação API key
+function authenticateAPI(req, res, next) {
+  const apiKey = req.headers['x-api-key'];
+  
+  if (!apiKey || apiKey !== API_KEY) {
+    return res.status(401).json({ error: 'Unauthorized - Invalid or missing API key' });
+  }
+  
+  next();
+}
+
+// Aplicar autenticação em todas as rotas exceto healthcheck
+app.use((req, res, next) => {
+  if (req.path === '/health') {
+    return next();
+  }
+  
+  // Para produção, descomentar:
+  // return authenticateAPI(req, res, next);
+  
+  next();
+});
 
 // Carregar registro de squads
 const squadRegistryPath = path.join(__dirname, 'squad-registry.json');
@@ -87,14 +115,46 @@ app.get('/query/:squadName', async (req, res) => {
   }
 });
 
-// Endpoint de health check
+// Endpoint de health check (público)
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
     activeSquads,
     queuedCommands: executionQueue.length,
-    maxConcurrent: MAX_CONCURRENT_SQUADS
+    maxConcurrent: MAX_CONCURRENT_SQUADS,
+    version: '1.0.0'
   });
+});
+
+// Endpoint para listar squads disponíveis
+app.get('/squads', (req, res) => {
+  res.json(squadRegistry);
+});
+
+// Endpoint para consultar dados financeiros
+app.get('/api/finance/summary', async (req, res) => {
+  try {
+    const squadPath = path.join(OPENSQUAD_BASE_PATH, 'squads/shlomo-engineering');
+    const runId = getLatestRunId(squadPath);
+    
+    if (!runId) {
+      return res.status(404).json({ error: 'Nenhum dado encontrado' });
+    }
+    
+    const dataPath = path.join(squadPath, 'output', runId, 'dashboard-data.json');
+    
+    if (!fs.existsSync(dataPath)) {
+      return res.status(404).json({ error: 'Dados não disponíveis' });
+    }
+    
+    const data = JSON.parse(fs.readFileSync(dataPath, 'utf-8'));
+    res.json(data);
+    
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 function identifySquad(intent, userMessage) {
@@ -192,6 +252,10 @@ async function pollSquadCompletion(squadId, squadPath, timeout = 600000) {
       // Timeout
       if (Date.now() - startTime > timeout) {
         clearInterval(interval);
+        
+        // Enviar webhook de timeout
+        sendWebhookCallback(squadId, 'timeout', null, 'Timeout após 10 minutos');
+        
         reject(new Error('Timeout: Squad demorou mais de 10 minutos'));
         return;
       }
@@ -212,19 +276,69 @@ async function pollSquadCompletion(squadId, squadPath, timeout = 600000) {
         
         if (fs.existsSync(outputPath)) {
           const output = JSON.parse(fs.readFileSync(outputPath, 'utf-8'));
+          
+          // Enviar webhook de sucesso
+          sendWebhookCallback(squadId, 'completed', runId, null, output);
+          
           resolve(output);
         } else {
+          sendWebhookCallback(squadId, 'completed_no_output', runId, 'Output file not found');
           resolve({ message: 'Squad completou mas output não encontrado' });
         }
       }
       
       else if (state.status === 'failed') {
         clearInterval(interval);
+        
+        // Enviar webhook de falha
+        sendWebhookCallback(squadId, 'failed', null, state.error || 'Erro desconhecido');
+        
         reject(new Error(`Squad falhou: ${state.error || 'Erro desconhecido'}`));
       }
       
     }, 2000); // Poll a cada 2 segundos
   });
+}
+
+function sendWebhookCallback(squadId, status, runId, error, outputSummary) {
+  const http = require('http');
+  
+  const payload = {
+    squad_id: squadId,
+    run_id: runId,
+    status,
+    completed_at: new Date().toISOString(),
+    error,
+    output_summary: outputSummary ? {
+      total_transacoes: outputSummary.metadata?.total_transacoes,
+      saldo_livre: outputSummary.saldo_livre,
+      pulmoes_status: outputSummary.alertas?.length > 0 ? 'ALERTA' : 'OK'
+    } : null
+  };
+  
+  const data = JSON.stringify(payload);
+  
+  const options = {
+    hostname: 'localhost',
+    port: process.env.ORCHESTRATOR_PORT || 3001,
+    path: '/webhook/squad-complete',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': data.length
+    }
+  };
+  
+  const req = http.request(options, (res) => {
+    console.log(`✅ Webhook enviado para ${squadId}: ${status}`);
+  });
+  
+  req.on('error', (error) => {
+    console.error('Erro enviando webhook:', error.message);
+  });
+  
+  req.write(data);
+  req.end();
 }
 
 function getLatestRunId(squadPath) {
