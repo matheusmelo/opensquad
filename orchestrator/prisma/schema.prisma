@@ -1,0 +1,43 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             String        @id @default(uuid())
+  whatsappNumber String        @unique
+  nome           String
+  plano          String
+  transactions   Transaction[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  data        DateTime
+  descricao   String
+  valor       Float
+  contexto    String   // 'PF' ou 'PJ'
+  pulmao      Int?     // 1, 2, ou 3 (nullable se for PJ)
+  categoria   String
+  confianca   Float    // score de classificação (0.0 a 1.0)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ClassificationRule {
+  id        String   @id @default(uuid())
+  pattern   String   // regex ou keyword match
+  contexto  String   // 'PF' ou 'PJ'
+  pulmao    Int?     
+  categoria String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

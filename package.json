@@ -16,7 +16,11 @@
     "healthcheck": "bash deploy/healthcheck.sh"
   },
   "dependencies": {
-    "playwright": "^1.58.2"
+    "@prisma/client": "^7.7.0",
+    "cors": "^2.8.6",
+    "playwright": "^1.58.2",
+    "prisma": "^7.7.0",
+    "sqlite3": "^6.0.1"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
