@@ -1,0 +1,33 @@
+{
+  "squads": {
+    "shlomo-engineering": {
+      "name": "Shlomo Engineering",
+      "description": "Processa faturas, classifica transações, constrói dashboards financeiros",
+      "icon": "🔧",
+      "triggers": ["fatura", "classificar", "dashboard", "gasto", "uber", "nubank", "pulmao", "financeiro", "saldo", "amazon", "ifood", "netflix"],
+      "pipeline_file": "squads/shlomo-engineering/pipeline/steps/01-parse-financial-data.md",
+      "input_folder": "squads/shlomo-engineering/input/",
+      "output_file": "squads/shlomo-engineering/output/{run_id}/dashboard-data.json",
+      "auto_run": true,
+      "response_max_chars": 500
+    },
+    "gestao-pessoal": {
+      "name": "Gestão Pessoal & Finanças Integradas",
+      "description": "Gerencia agenda, organiza as finanças caóticas (PF e PJ) e desenvolve app customizado de gestão financeira",
+      "icon": "💼",
+      "triggers": ["agenda", "rotina", "tempo", "organizar documentos", "documento", "reunião", "prazo"],
+      "pipeline_file": "squads/gestao-pessoal/pipeline/rotina-diaria.md",
+      "input_folder": "squads/gestao-pessoal/input/",
+      "output_file": "squads/gestao-pessoal/output/{run_id}/resumo-executivo.md",
+      "auto_run": false,
+      "response_max_chars": 400
+    }
+  },
+  "settings": {
+    "max_concurrent_squads": 3,
+    "execution_timeout_ms": 600000,
+    "polling_interval_ms": 2000,
+    "queue_enabled": true,
+    "whatsapp_integration": true
+  }
+}

@@ -1,0 +1,53 @@
+# .gitignore for production
+
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# WhatsApp sessions (will be regenerated)
+sessions/
+data/whatsapp-sessions/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Build outputs
+dist/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test results
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Railway/Fly.io specific
+.railway/
+.fly/

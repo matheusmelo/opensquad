@@ -1,0 +1,13 @@
+name: "Shlomo Engineering"
+description: "Squad de engenharia para desenvolvimento autônomo do Shlomo Ledger - app financeiro com método dos 3 Pulmões"
+icon: 🔧
+
+pipeline:
+  - id: parse-financial-data
+    name: "Parser de Dados Financeiras"
+  - id: classify-transactions
+    name: "Classificação de Transações"
+  - id: build-dashboard
+    name: "Construção de Dashboard"
+  - id: deploy-feature
+    name: "Deploy de Feature"

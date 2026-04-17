@@ -1,0 +1,9 @@
+# Squad: Gestão Pessoal & Finanças Integradas
+name: "Governança & Finanças Pessoais"
+description: "Gerencia agenda, organiza as finanças caóticas (PF e PJ) e desenvolve um app customizado de gestão financeira."
+icon: 💼
+
+pipeline:
+  - id: organizar-documentos
+    name: "Organização Inicial de Documentos e Referências"
+    step: "pipeline/rotina-diaria.md"

@@ -1,0 +1,11 @@
+name: "Dev Assistant"
+description: "Assistente de desenvolvimento autônomo para executar tarefas técnicas, debugar, implementar features e manter o projeto"
+icon: 👨‍💻
+
+pipeline:
+  - id: execute-task
+    name: "Executar Tarefa de Desenvolvimento"
+  - id: validate-output
+    name: "Validar Qualidade do Código"
+  - id: commit-changes
+    name: "Commit e Documentação"

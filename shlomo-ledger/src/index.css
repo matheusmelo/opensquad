@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --color-p1: #ef4444; /* Pulmão 1: Essenciais (vermelho) */
+  --color-p1-light: #fca5a5;
+  --color-p2: #7f1d1d; /* Pulmão 2: Eventuais (vinho/dark red) */
+  --color-p2-light: #b91c1c;
+  --color-p3: #1e3a8a; /* Pulmão 3: Lazer (azul escuro) */
+  --color-p3-light: #3b82f6;
+  --color-business: #059669; /* Empresa (Orion/Music) */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #09090b; /* zinc-950 */
+  color: #f4f4f5; /* zinc-50 */
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}

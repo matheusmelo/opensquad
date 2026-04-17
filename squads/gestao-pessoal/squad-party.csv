@@ -1,0 +1,5 @@
+agent_path,role,name
+agents/secretario-executivo.md,Coordenador da Vida Pessoal,Secretário Executivo
+agents/assessor-financeiro.md,Especialista Financeiro,Assessor Financeiro
+agents/gerente-de-tempo.md,Gestor de Agenda e Hábitos,Gerente de Tempo
+agents/engenheiro-de-software.md,Desenvolvedor de Soluções,Engenheiro de Software

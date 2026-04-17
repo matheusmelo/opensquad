@@ -1,0 +1,24 @@
+{
+  "name": "opensquad-project",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev:orchestrator": "cd orchestrator && node orchestrator.js",
+    "dev:whatsapp": "cd skills/whatsapp-integration && node mcp-whatsapp-server.js",
+    "dev:dashboard": "cd shlomo-ledger && npm run dev",
+    "dev": "concurrently \"npm run dev:orchestrator\" \"npm run dev:whatsapp\" \"npm run dev:dashboard\"",
+    "build": "npm run build:all",
+    "build:all": "cd shlomo-ledger && npm run build",
+    "start": "pm2 start deploy/ecosystem.config.js",
+    "stop": "pm2 stop all",
+    "logs": "pm2 logs",
+    "deploy:setup": "bash deploy/setup-ubuntu.sh",
+    "healthcheck": "bash deploy/healthcheck.sh"
+  },
+  "dependencies": {
+    "playwright": "^1.58.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

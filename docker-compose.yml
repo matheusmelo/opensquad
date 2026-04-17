@@ -1,0 +1,79 @@
+version: "3.8"
+
+services:
+  # WhatsApp Bot MCP Server
+  whatsapp-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.whatsapp
+    environment:
+      - WHATSAPP_SESSION_PATH=/data/sessions
+      - DEEPGRAM_API_KEY=${DEEPGRAM_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENSQUAD_BASE_PATH=/app
+    volumes:
+      - whatsapp-sessions:/data/sessions
+      - ./logs:/app/logs
+    ports:
+      - "3002:3002"
+    restart: unless-stopped
+    depends_on:
+      - redis
+
+  # Orchestrator
+  orchestrator:
+    build:
+      context: .
+      dockerfile: Dockerfile.orchestrator
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENSQUAD_BASE_PATH=/app
+      - MAX_CONCURRENT_SQUADS=5
+      - REDIS_URL=redis://redis:6379
+    volumes:
+      - ./squads:/app/squads
+      - ./logs:/app/logs
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - postgres
+
+  # Shlomo Ledger Dashboard (static files)
+  shlomo-ledger:
+    build:
+      context: ./shlomo-ledger
+      dockerfile: ../Dockerfile.dashboard
+    ports:
+      - "3000:80"
+    restart: unless-stopped
+
+  # Redis (cache + queue)
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis-data:/data
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  # PostgreSQL (production database)
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      - POSTGRES_USER=opensquad
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-changeme}
+      - POSTGRES_DB=opensquad
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+volumes:
+  whatsapp-sessions:
+  redis-data:
+  postgres-data:

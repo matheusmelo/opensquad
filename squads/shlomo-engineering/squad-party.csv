@@ -1,0 +1,5 @@
+agent_path,role,name
+agents/pdf-parser-engineer.md,Especialista em Extração de Dados,PDF Parser Engineer
+agents/classification-engine.md,Motor de Classificação Inteligente,Classification Engine
+agents/dashboard-builder.md,Construtor de Interfaces Visuais,Dashboard Builder
+agents/qa-validator.md,Validador de Qualidade e Testes,QA Validator

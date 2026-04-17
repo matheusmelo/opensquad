@@ -1,0 +1,10 @@
+name: "Lançamento Meteórico - Dani Black"
+description: "Squad de orquestração do lançamento. Focado em criar os criativos, redigir a copy persuasiva e gerenciar as automações de e-mail e grupos de WhatsApp."
+icon: 🎸
+pipeline:
+  - id: planejamento
+    name: "Criação de Copy e Criativos Base"
+    step: "pipeline/planejamento.md"
+  - id: ativacao
+    name: "Automações Multi-canal (WhatsApp e Email)"
+    step: "pipeline/ativacao.md"
