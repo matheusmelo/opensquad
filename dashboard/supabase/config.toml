@@ -1,0 +1,4 @@
+project_id = "czkiozurkhnmctgjqmsv"
+
+[functions.orchestrate]
+verify_jwt = true
