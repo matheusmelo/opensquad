@@ -1,0 +1,46 @@
+name: Pull dashboard from orquestrador-orion
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'   # a cada 30 minutos
+  workflow_dispatch:          # disparo manual pelo GitHub Actions
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout opensquad
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: master
+
+      - name: Checkout orquestrador-orion
+        uses: actions/checkout@v4
+        with:
+          repository: matheusmelo/orquestrador-orion
+          token: ${{ secrets.ORION_PAT }}
+          path: orion-latest
+
+      - name: Sync orion → dashboard/
+        run: |
+          rsync -av --delete \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='dist' \
+            --exclude='.env' \
+            --exclude='src/integrations/supabase/client.ts' \
+            --exclude='src/integrations/supabase/types.ts' \
+            orion-latest/ dashboard/
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "kilo-sync[bot]"
+          git config user.email "kilo@opensquad.dev"
+          git add dashboard/
+          if git diff --staged --quiet; then
+            echo "Dashboard já está sincronizado, nenhuma mudança."
+          else
+            git commit -m "sync: pull dashboard de orquestrador-orion $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            git push origin master
+          fi

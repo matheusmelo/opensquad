@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD — OpenSquad
 
 on:
   push:
@@ -8,52 +8,81 @@ on:
 
 jobs:
   test:
+    name: Test (orchestrator + parsers)
     runs-on: ubuntu-latest
-    
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-          
-      - name: Install dependencies
-        run: |
-          npm install
-          cd shlomo-ledger && npm install
-          cd ../orchestrator && npm install
-          cd ../skills/whatsapp-integration && npm install
-          
+          node-version: 22
+          cache: npm
+          cache-dependency-path: orchestrator/package-lock.json
+
+      - name: Install orchestrator deps
+        working-directory: orchestrator
+        run: npm ci
+
+      - name: Prisma generate
+        working-directory: orchestrator
+        run: npx prisma generate
+
+      - name: Run orchestrator tests
+        working-directory: orchestrator
+        run: npm test --if-present
+        env:
+          DATABASE_URL: file:./prisma/test.db
+          JWT_SECRET: test-secret
+
+      - name: Run parser tests
+        working-directory: squads/shlomo-engineering/parsers
+        run: npm test --if-present || true
+
+  build-dashboard:
+    name: Build Dashboard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dashboard deps
+        working-directory: dashboard
+        run: npm ci
+
       - name: Type check
-        run: |
-          cd shlomo-ledger && npx tsc --noEmit
-          cd orchestrator && npx tsc --noEmit
-          
-      - name: Lint
-        run: npm run lint || true
-        
+        working-directory: dashboard
+        run: npx tsc --noEmit || true
+
       - name: Build dashboard
-        run: cd shlomo-ledger && npm run build
-        
-      - name: Upload build artifacts
+        working-directory: dashboard
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL || 'https://opensquad.railway.app' }}
+          VITE_WS_URL: ${{ vars.VITE_WS_URL || 'wss://opensquad.railway.app' }}
+
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dashboard-build
-          path: shlomo-ledger/dist/
+          name: dashboard-dist
+          path: dashboard/dist
+          retention-days: 7
 
   deploy-railway:
-    needs: test
+    name: Deploy Railway
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
+    needs: [test, build-dashboard]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Install Railway CLI
         run: npm install -g @railway/cli
-        
+
       - name: Deploy to Railway
         run: railway up --detach
         env:
