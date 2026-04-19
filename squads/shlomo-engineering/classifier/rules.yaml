@@ -1,0 +1,124 @@
+rules:
+  # PULMÃO 1 - ESSENCIAIS (Aluguel, contas básicas, alimentação)
+  - pattern: "ALUGUEL|IPTU|CONDOMINIO|COND"
+    contexto: "PF"
+    pulmao: "Pulmao 1"
+    categoria: "Moradia"
+    confiancaMinima: 0.95
+
+  - pattern: "LUZ|ENERGIA|SABESP|COMGAS|CELESC|ELETRICA"
+    contexto: "PF"
+    pulmao: "Pulmao 1"
+    categoria: "Utilidades"
+    confiancaMinima: 0.95
+
+  - pattern: "AGUA|CESAN|CORREIOS|TELEFONE|VIVO|CLARO|OI|TIM"
+    contexto: "PF"
+    pulmao: "Pulmao 1"
+    categoria: "Utilidades"
+    confiancaMinima: 0.95
+
+  - pattern: "SUPERMERCADO|MERCADONA|ASSAI|EXTRA|CARREFOUR|PÃO DE AÇÚCAR"
+    contexto: "PF"
+    pulmao: "Pulmao 1"
+    categoria: "Alimentação"
+    confiancaMinima: 0.90
+
+  - pattern: "PADARIA|ACOUQUE|HORTIFRUTI|FEIRA"
+    contexto: "PF"
+    pulmao: "Pulmao 1"
+    categoria: "Alimentação"
+    confiancaMinima: 0.85
+
+  # PULMÃO 2 - EVENTUAIS (Compras planejadas, saúde, educação)
+  - pattern: "FARMACIA|DROGASIL|RAIA|ULTRAFARMA|MEDICAMENTO|CONSULTA MEDICA|DENTISTA"
+    contexto: "PF"
+    pulmao: "Pulmao 2"
+    categoria: "Saúde"
+    confiancaMinima: 0.90
+
+  - pattern: "ESCOLA|FACULDADE|CURSO|IDIOMA|INGLES|ESPANHOL"
+    contexto: "PF"
+    pulmao: "Pulmao 2"
+    categoria: "Educação"
+    confiancaMinima: 0.90
+
+  - pattern: "UBER|99|TAXI|MOTO|TRANSPORTE|GASOLINA|POSTO|IPIRANGA|BR|SHELL"
+    contexto: "PF"
+    pulmao: "Pulmao 2"
+    categoria: "Transporte"
+    confiancaMinima: 0.85
+
+  - pattern: "VETERINARIO|PETS|PETSHOP|RACAO"
+    contexto: "PF"
+    pulmao: "Pulmao 2"
+    categoria: "Pets"
+    confiancaMinima: 0.85
+
+  - pattern: "ASSISTENCIA TECNICA|REPARO|MECANICO|LAVA RAPIDO|LAVAGEM"
+    contexto: "PF"
+    pulmao: "Pulmao 2"
+    categoria: "Manutenção"
+    confiancaMinima: 0.80
+
+  # PULMÃO 3 - LAZER (Entretenimento, viagens, hobbies)
+  - pattern: "NETFLIX|SPOTIFY|AMAZON PRIME|DISNEY|HBO|PARAMOUNT|CRUNCHYROLL"
+    contexto: "PF"
+    pulmao: "Pulmao 3"
+    categoria: "Streaming"
+    confiancaMinima: 0.95
+
+  - pattern: "IFOOD|RAPPPI|UBEREATS|RESTAURANTE|PIZZARIA|LANCHONETE|BAR"
+    contexto: "PF"
+    pulmao: "Pulmao 3"
+    categoria: "Alimentação"
+    confiancaMinima: 0.85
+
+  - pattern: "CINEMA|TEATRO|SHOW|MUSICAL|CONCERTO|FESTIVAL"
+    contexto: "PF"
+    pulmao: "Pulmao 3"
+    categoria: "Entretenimento"
+    confiancaMinima: 0.85
+
+  - pattern: "VIAGEM|HOTEL|AIRBNB|DECOLAR|CVC|PONTOS TURISTICOS"
+    contexto: "PF"
+    pulmao: "Pulmao 3"
+    categoria: "Viagem"
+    confiancaMinima: 0.85
+
+  - pattern: "ACADEMIA|GINASIO|MUSCULAÇÃO|CROSSFIT|PILATES|YOGA|ESPORTE"
+    contexto: "PF"
+    pulmao: "Pulmao 3"
+    categoria: "Esporte"
+    confiancaMinima: 0.80
+
+  - pattern: "AMAZON|MAGAZINE LUIZA|CASAS BAHIA|RIACHUELO|C&A|RENNER"
+    contexto: "PF"
+    pulmao: "Pulmao 3"
+    categoria: "Compras"
+    confiancaMinima: 0.70
+
+  # PJ - ORION (Receitas e despesas empresariais)
+  - pattern: "AWS|AMAZON WEB SERVICES|CLOUD|HEROKU|DIGITALOCEAN|LINODE"
+    contexto: "PJ"
+    pulmao: null
+    categoria: "Infraestrutura"
+    confiancaMinima: 0.90
+
+  - pattern: "FACEBOOK ADS|GOOGLE ADS|LINKEDIN ADS|INSTAGRAM ADS|TIKTOK ADS"
+    contexto: "PJ"
+    pulmao: null
+    categoria: "Marketing"
+    confiancaMinima: 0.90
+
+  - pattern: "SLACK|ZOOM|MICROSOFT 365|GOOGLE WORKSPACE|NOTION"
+    contexto: "PJ"
+    pulmao: null
+    categoria: "Ferramentas"
+    confiancaMinima: 0.85
+
+  - pattern: "CONTADOR|CONTABILIDADE|IMPOSTO|DARF|GPS"
+    contexto: "PJ"
+    pulmao: null
+    categoria: "Contabilidade"
+    confiancaMinima: 0.85

@@ -1,0 +1,28 @@
+id: shlomo-builder
+name: Squad Builder Meta-Squad
+description: Squad que cria automaticamente novas squads a partir de descrição textual
+status: active
+
+agents:
+  - id: architect
+    name: Arquitetto de Squads
+    role: Planejamento e design de squads
+    ai_model: gpt-4o-mini
+
+pipeline:
+  steps:
+    - id: analyze
+      name: Analisar requisito
+      agent: architect
+    - id: design
+      name: Desenhar estrutura da squad
+      agent: architect
+    - id: generate
+      name: Gerar arquivos da squad
+      agent: architect
+    - id: validate
+      name: Validar squad gerada
+      agent: architect
+    - id: save
+      name: Salvar squad no sistema
+      agent: architect

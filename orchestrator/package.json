@@ -1,0 +1,36 @@
+{
+  "name": "opensquad-orchestrator",
+  "version": "1.0.0",
+  "description": "Orchestrator for OpenSquad autonomous agents",
+  "main": "orchestrator.js",
+  "scripts": {
+    "start": "node orchestrator.js",
+    "dev": "nodemon orchestrator.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.0.0",
+    "bcryptjs": "^3.0.3",
+    "bullmq": "^5.74.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "express-rate-limit": "^8.3.2",
+    "ioredis": "^5.10.1",
+    "js-yaml": "^4.1.1",
+    "json2csv": "^6.0.0-alpha.2",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.1.1",
+    "node-cron": "^4.2.1",
+    "openai": "^4.0.0",
+    "pdf-parse": "^2.4.5",
+    "pdfkit": "^0.18.0",
+    "prisma": "^5.0.0",
+    "ws": "^8.20.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0",
+    "nodemon": "^3.0.0"
+  }
+}
