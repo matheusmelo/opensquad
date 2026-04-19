@@ -2,7 +2,11 @@
 
 # Dependencies
 node_modules/
+dashboard/node_modules/
+dashboard/dist/
+dashboard/.env
 package-lock.json
+dashboard/package-lock.json
 
 # Environment files
 .env
