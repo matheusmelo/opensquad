@@ -27,6 +27,10 @@ app.use('/api/monitor', monitorRoutes);
 const uploadRoutes = require('./routes/upload');
 app.use('/api/upload', uploadRoutes);
 
+// Open Finance (Pluggy) — conexão com contas bancárias
+const pluggyRoutes = require('./routes/pluggy');
+app.use('/api/pluggy', pluggyRoutes);
+
 // Middleware de autenticação API key
 function authenticateAPI(req, res, next) {
   const apiKey = req.headers['x-api-key'];

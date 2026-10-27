@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Home, Ruler, Plane, Activity } from 'lucide-react';
+import { Home, Ruler, Plane, Activity, Landmark } from 'lucide-react';
 import { LungCard } from './components/LungCard';
 import { MonthlyOverview } from './components/MonthlyOverview';
 import { TransactionTable } from './components/TransactionTable';
 import { PDFUploader } from './components/PDFUploader';
 import { AgentMonitor } from './components/AgentMonitor';
+import { BankConnections } from './components/BankConnections';
 
 import { CampaignCard } from './components/CampaignCard';
 import { LaunchTimeline } from './components/LaunchTimeline';
@@ -13,6 +14,8 @@ import { RoyaltyTracker } from './components/RoyaltyTracker';
 export default function App() {
   const [context, setContext] = useState<'PF' | 'PJ' | 'MONITOR'>('PF');
   const [showUploader, setShowUploader] = useState(false);
+  const [showBanks, setShowBanks] = useState(false);
+  const [bankSyncs, setBankSyncs] = useState(0);
 
   return (
     <div className="min-h-screen p-4 sm:p-6 md:p-10 flex flex-col gap-8 tracking-tight">
@@ -31,6 +34,13 @@ export default function App() {
             className="px-4 py-2.5 rounded-lg font-bold transition-all whitespace-nowrap bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-2 shadow-sm"
           >
             + Upload Fatura
+          </button>
+          <button
+            onClick={() => setShowBanks(true)}
+            className="px-4 py-2.5 rounded-lg font-bold transition-all whitespace-nowrap bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-2 shadow-sm"
+          >
+            <Landmark size={18} />
+            Conectar banco
           </button>
 
           <div className="w-px h-8 bg-zinc-700 mx-2"></div>
@@ -74,11 +84,26 @@ export default function App() {
         </div>
       )}
 
+      {/* OPEN FINANCE (PLUGGY) MODAL */}
+      {showBanks && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="relative w-full max-w-2xl">
+            <button
+              onClick={() => setShowBanks(false)}
+              className="absolute -top-12 right-0 text-white hover:text-zinc-300 font-bold"
+            >
+              Fechar (X)
+            </button>
+            <BankConnections onSynced={() => setBankSyncs((n) => n + 1)} />
+          </div>
+        </div>
+      )}
+
       {/* RENDER DASHBOARDS */}
       {context === 'MONITOR' ? (
         <AgentMonitor />
       ) : context === 'PF' ? (
-        <PersonalDashboard key={showUploader ? 'uploading' : 'ready'} />
+        <PersonalDashboard key={`${showUploader ? 'uploading' : 'ready'}-${bankSyncs}`} />
       ) : (
         <BusinessDashboard />
       )}
