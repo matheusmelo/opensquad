@@ -55,13 +55,27 @@ const PLUGGY_CATEGORY_MAP = [
  * Lançamentos que não são consumo e por isso ficam fora dos pulmões, antes de
  * qualquer regra (as regras do YAML casam nomes de pessoas por acidente).
  */
-function nonSpending(description, pluggyCategory, tx) {
+// Pix da PJ para o próprio dono é pró-labore (só troca de bolso), não custo da empresa
+const OWNER_NAME_TOKENS = stripAccents(process.env.PLUGGY_OWNER_NAME || 'Mateus Vinícius').toLowerCase().split(/\s+/).filter(Boolean);
+
+function isOwner(description, tx) {
+  const text = stripAccents(`${tx?.paymentData?.receiver?.name || ''} ${description}`).toLowerCase();
+  return OWNER_NAME_TOKENS.every((token) => text.includes(token));
+}
+
+function nonSpending(description, pluggyCategory, contexto, tx) {
   // IOF acompanha a compra internacional; não é um gasto por si só
   if (/\biof\b/i.test(description) || /tax on financial operations/i.test(pluggyCategory || '')) {
     return { pulmao: null, categoria: 'IOF', confianca: 0.9 };
   }
-  // Pix/TED para CPF é transferência a uma pessoa; para CNPJ (loja) segue a classificação normal
   const receiverDoc = tx?.paymentData?.receiver?.documentNumber?.type;
+  // Na PJ, Pix para pessoa física é pagamento de freelancer/prestador: custo da Orion
+  if (contexto === 'PJ' && receiverDoc === 'CPF') {
+    return isOwner(description, tx)
+      ? { pulmao: null, categoria: 'Pró-labore', confianca: 0.9 }
+      : { pulmao: null, categoria: 'Prestadores PF', confianca: 0.7 };
+  }
+  // Na PF, Pix/TED para CPF é transferência a uma pessoa; para CNPJ (loja) segue a classificação normal
   if (receiverDoc === 'CPF' || /^transfer/i.test(pluggyCategory || '')) {
     return { pulmao: null, categoria: 'Transferência', confianca: 0.9 };
   }
@@ -69,7 +83,7 @@ function nonSpending(description, pluggyCategory, tx) {
 }
 
 function classify(description, pluggyCategory, contexto, rules, tx) {
-  const skip = nonSpending(description, pluggyCategory, tx);
+  const skip = nonSpending(description, pluggyCategory, contexto, tx);
   if (skip) return skip;
 
   const candidates = [description, stripAccents(description)];
@@ -122,7 +136,7 @@ function natureza(expense, accountType, classification) {
   if (MOVES_MONEY.test(categoria)) return 'transferencia';
   // Pix recebido (de cliente ou de pessoa) conta como receita; no cartão, crédito é estorno
   if (!expense) return accountType === 'CREDIT' ? 'estorno' : 'receita';
-  return /transfer/i.test(categoria) ? 'transferencia' : 'despesa';
+  return /transfer|pr[óo]-labore/i.test(categoria) ? 'transferencia' : 'despesa';
 }
 
 // ---------- Sync ----------
