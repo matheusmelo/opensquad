@@ -218,15 +218,16 @@ router.patch('/transactions/:id', async (req, res) => {
       });
 
       const regex = new RegExp(pattern, 'i');
+      // Só saídas (despesa/transferência): uma regra de gasto não deve mexer em receitas
       const similar = await prisma.transaction.findMany({
-        where: { contexto, natureza: 'despesa', id: { not: tx.id } },
+        where: { contexto, natureza: { in: ['despesa', 'transferencia'] }, id: { not: tx.id } },
         select: { id: true, descricao: true },
       });
       const ids = similar.filter((t) => regex.test(t.descricao)).map((t) => t.id);
       if (ids.length) {
         const r = await prisma.transaction.updateMany({
           where: { id: { in: ids } },
-          data: { pulmao: updated.pulmao, categoria: updated.categoria, confianca: 0.95 },
+          data: { pulmao: updated.pulmao, categoria: updated.categoria, natureza: updated.natureza, confianca: 0.95 },
         });
         aplicadas = r.count;
       }

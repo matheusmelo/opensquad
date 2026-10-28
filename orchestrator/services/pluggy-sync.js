@@ -82,12 +82,8 @@ function nonSpending(description, pluggyCategory, contexto, tx) {
   return null;
 }
 
-function classify(description, pluggyCategory, contexto, rules, tx) {
-  const skip = nonSpending(description, pluggyCategory, contexto, tx);
-  if (skip) return skip;
-
+function matchRule(description, contexto, rules) {
   const candidates = [description, stripAccents(description)];
-
   for (const rule of rules) {
     if (rule.contexto && rule.contexto !== contexto) continue;
     let regex;
@@ -104,6 +100,19 @@ function classify(description, pluggyCategory, contexto, rules, tx) {
       };
     }
   }
+  return null;
+}
+
+function classify(description, pluggyCategory, contexto, rules, tx) {
+  // Regra criada pelo usuário vale mais que a detecção automática de transferência
+  const userHit = matchRule(description, contexto, rules.filter((r) => r.id));
+  if (userHit) return userHit;
+
+  const skip = nonSpending(description, pluggyCategory, contexto, tx);
+  if (skip) return skip;
+
+  const yamlHit = matchRule(description, contexto, rules.filter((r) => !r.id));
+  if (yamlHit) return yamlHit;
 
   const categoryLabel = pluggyCategory || 'Outros';
   if (contexto === 'PJ') return { pulmao: null, categoria: categoryLabel, confianca: 0.5 };
