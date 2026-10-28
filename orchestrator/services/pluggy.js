@@ -92,7 +92,9 @@ async function request(method, pathname, { query, body, retry = true } = {}) {
  * Com itemId, o widget abre no modo "atualizar credenciais" daquele item.
  */
 async function createConnectToken({ itemId, clientUserId } = {}) {
-  const options = { clientUserId, avoidDuplicates: true };
+  // Sem avoidDuplicates: o MeuPluggy não tem credenciais, então qualquer item
+  // anterior conta como "duplicado" e o widget falha com ITEM_USER_ALREADY_EXISTS
+  const options = { clientUserId };
   if (process.env.PLUGGY_WEBHOOK_URL) options.webhookUrl = process.env.PLUGGY_WEBHOOK_URL;
   const data = await request('POST', '/connect_token', { body: { itemId, options } });
   return data.accessToken;
@@ -107,20 +109,20 @@ async function listAccounts(itemId) {
   return data.results || [];
 }
 
-/** Busca todas as páginas de transações de uma conta no período. */
+/**
+ * Busca todas as transações de uma conta no período (GET /v2/transactions,
+ * paginado por cursor — o /transactions antigo foi desativado pelo Pluggy).
+ */
 async function listTransactions(accountId, { from, to } = {}) {
-  const pageSize = 500;
   const all = [];
-  let page = 1;
-  let totalPages = 1;
+  let cursor;
   do {
-    const data = await request('GET', '/transactions', {
-      query: { accountId, from, to, pageSize, page },
+    const data = await request('GET', '/v2/transactions', {
+      query: { accountId, dateFrom: from, dateTo: to, cursor },
     });
     all.push(...(data.results || []));
-    totalPages = data.totalPages || 1;
-    page += 1;
-  } while (page <= totalPages);
+    cursor = data.next || undefined;
+  } while (cursor);
   return all;
 }
 
