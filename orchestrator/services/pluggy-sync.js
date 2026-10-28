@@ -51,7 +51,27 @@ const PLUGGY_CATEGORY_MAP = [
   { match: /travel|airline|airport|accommodation|hotel|leisure|entertainment|streaming|gaming|eating out|restaurant|bar|food delivery|cinema|show|sport/i, categoria: null, pulmao: 3 },
 ];
 
-function classify(description, pluggyCategory, contexto, rules) {
+/**
+ * Lançamentos que não são consumo e por isso ficam fora dos pulmões, antes de
+ * qualquer regra (as regras do YAML casam nomes de pessoas por acidente).
+ */
+function nonSpending(description, pluggyCategory, tx) {
+  // IOF acompanha a compra internacional; não é um gasto por si só
+  if (/\biof\b/i.test(description) || /tax on financial operations/i.test(pluggyCategory || '')) {
+    return { pulmao: null, categoria: 'IOF', confianca: 0.9 };
+  }
+  // Pix/TED para CPF é transferência a uma pessoa; para CNPJ (loja) segue a classificação normal
+  const receiverDoc = tx?.paymentData?.receiver?.documentNumber?.type;
+  if (receiverDoc === 'CPF' || /^transfer/i.test(pluggyCategory || '')) {
+    return { pulmao: null, categoria: 'Transferência', confianca: 0.9 };
+  }
+  return null;
+}
+
+function classify(description, pluggyCategory, contexto, rules, tx) {
+  const skip = nonSpending(description, pluggyCategory, tx);
+  if (skip) return skip;
+
   const candidates = [description, stripAccents(description)];
 
   for (const rule of rules) {
@@ -108,7 +128,7 @@ function isoDate(d) {
  * Cria/atualiza a conexão local a partir de um itemId do Pluggy e importa
  * contas + transações. Idempotente: pode ser chamado várias vezes.
  */
-async function syncItem(itemId, { contexto, days } = {}) {
+async function syncItem(itemId, { contexto, days, reclassify = false } = {}) {
   const item = await pluggy.getItem(itemId);
   const user = await getOwnerUser();
 
@@ -174,15 +194,26 @@ async function syncItem(itemId, { contexto, days } = {}) {
       const description = tx.description || tx.descriptionRaw || 'Sem descrição';
       const expense = isExpense(tx, acc.type);
       const classification = expense
-        ? classify(description, tx.category, connectionContexto, rules)
+        ? classify(description, tx.category, connectionContexto, rules, tx)
         : { pulmao: null, categoria: tx.category || 'Receita', confianca: 0.6 };
 
       const prev = await prisma.transaction.findUnique({ where: { externalId: tx.id } });
       if (prev) {
-        // Não sobrescreve classificação que o usuário já corrigiu: só data/valor/descrição
+        // Não sobrescreve classificação que o usuário já corrigiu: só data/valor/descrição,
+        // a menos que a reclassificação tenha sido pedida explicitamente
         await prisma.transaction.update({
           where: { id: prev.id },
-          data: { data: new Date(tx.date), descricao: description, valor: Math.abs(tx.amount) },
+          data: {
+            data: new Date(tx.date),
+            descricao: description,
+            valor: Math.abs(tx.amount),
+            ...(reclassify && {
+              contexto: connectionContexto,
+              pulmao: classification.pulmao,
+              categoria: classification.categoria,
+              confianca: classification.confianca,
+            }),
+          },
         });
         updated += 1;
       } else {

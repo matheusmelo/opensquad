@@ -72,7 +72,8 @@ router.post('/connections/:id/sync', async (req, res) => {
       await pluggy.refreshItem(connection.pluggyItemId);
     }
     const days = req.body?.days ? Number(req.body.days) : undefined;
-    res.json(await syncItem(connection.pluggyItemId, { days }));
+    const reclassify = req.body?.reclassify === true;
+    res.json(await syncItem(connection.pluggyItemId, { days, reclassify }));
   } catch (error) {
     handleError(res, error);
   }
