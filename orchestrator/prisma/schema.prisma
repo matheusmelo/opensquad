@@ -8,36 +8,86 @@ generator client {
 }
 
 model User {
-  id             String        @id @default(uuid())
-  whatsappNumber String        @unique
-  nome           String
-  plano          String
-  transactions   Transaction[]
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id              String           @id @default(uuid())
+  whatsappNumber  String           @unique
+  nome            String
+  plano           String
+  transactions    Transaction[]
+  bankConnections BankConnection[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 model Transaction {
-  id          String   @id @default(uuid())
-  data        DateTime
-  descricao   String
-  valor       Float
-  contexto    String   // 'PF' ou 'PJ'
-  pulmao      Int?     // 1, 2, ou 3 (nullable se for PJ)
-  categoria   String
-  confianca   Float    // score de classificação (0.0 a 1.0)
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String       @id @default(uuid())
+  data          DateTime
+  descricao     String
+  valor         Float
+  contexto      String // 'PF' ou 'PJ'
+  pulmao        Int? // 1, 2, ou 3 (nullable se for PJ)
+  categoria     String
+  confianca     Float // score de classificação (0.0 a 1.0)
+  natureza      String       @default("despesa") // 'despesa' | 'receita' | 'estorno' | 'transferencia'
+  origem        String       @default("manual") // 'manual' | 'pdf' | 'pluggy'
+  externalId    String?      @unique // id da transação no Pluggy (evita duplicar)
+  bankAccountId String?
+  bankAccount   BankAccount? @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
+  userId        String
+  user          User         @relation(fields: [userId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+// Conexão Open Finance via Pluggy (1 item = 1 login num banco)
+model BankConnection {
+  id            String        @id @default(uuid())
+  pluggyItemId  String        @unique
+  connectorName String
+  connectorLogo String?
+  status        String // status do item no Pluggy (UPDATED, UPDATING, LOGIN_ERROR...)
+  contexto      String        @default("PF") // 'PF' ou 'PJ' — não deixa misturar contextos
+  lastSyncAt    DateTime?
+  error         String?
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  accounts      BankAccount[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model BankAccount {
+  id              String         @id @default(uuid())
+  pluggyAccountId String         @unique
+  connectionId    String
+  connection      BankConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  nome            String
+  tipo            String // 'BANK' | 'CREDIT'
+  subtipo         String?
+  numero          String?
+  saldo           Float
+  moeda           String         @default("BRL")
+  transactions    Transaction[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 }
 
 model ClassificationRule {
   id        String   @id @default(uuid())
-  pattern   String   // regex ou keyword match
-  contexto  String   // 'PF' ou 'PJ'
-  pulmao    Int?     
+  pattern   String // regex ou keyword match
+  contexto  String // 'PF' ou 'PJ'
+  pulmao    Int?
   categoria String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model AuthUser {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         String    @default("user")
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }

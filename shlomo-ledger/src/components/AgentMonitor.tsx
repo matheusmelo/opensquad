@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
+import { API_URL } from '../lib/api';
 import { Activity, Cpu, CheckCircle2, XCircle, Clock, Play, Pause, Zap } from 'lucide-react';
 
 interface AgentStatus {
@@ -24,14 +25,16 @@ interface SquadExecution {
 export function AgentMonitor() {
   const [activeExecutions, setActiveExecutions] = useState<SquadExecution[]>([]);
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [selectedSquad, setSelectedSquad] = useState<string | null>(null);
+  // Detalhe por squad ainda não tem tela; o clique só guarda a seleção
+  const [, setSelectedSquad] = useState<string | null>(null);
 
   useEffect(() => {
     if (!autoRefresh) return;
 
     const fetchStatus = async () => {
       try {
-        const response = await fetch('/api/monitor/executions');
+        const response = await fetch(`${API_URL}/api/monitor/executions`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = await response.json();
         setActiveExecutions(data);
       } catch (error) {
@@ -44,24 +47,6 @@ export function AgentMonitor() {
     
     return () => clearInterval(interval);
   }, [autoRefresh]);
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'working': return 'text-blue-400 bg-blue-500/10 border-blue-500/30';
-      case 'done': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
-      case 'error': return 'text-red-400 bg-red-500/10 border-red-500/30';
-      default: return 'text-zinc-400 bg-zinc-800/50 border-zinc-700';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'working': return <Activity className="animate-pulse" size={18} />;
-      case 'done': return <CheckCircle2 size={18} />;
-      case 'error': return <XCircle size={18} />;
-      default: return <Clock size={18} />;
-    }
-  };
 
   return (
     <div className="min-h-screen p-6 md:p-10 bg-zinc-950 text-white">
@@ -135,7 +120,7 @@ export function AgentMonitor() {
   );
 }
 
-function StatCard({ icon, label, value, color }: any) {
+function StatCard({ icon, label, value, color }: { icon: ReactNode; label: string; value: ReactNode; color: string }) {
   return (
     <div className={`p-6 rounded-2xl border backdrop-blur-sm ${color}`}>
       <div className="flex items-center justify-between mb-3">
