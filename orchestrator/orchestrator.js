@@ -31,6 +31,10 @@ app.use('/api/upload', uploadRoutes);
 const pluggyRoutes = require('./routes/pluggy');
 app.use('/api/pluggy', pluggyRoutes);
 
+// Ledger: resumo por pulmão, histórico e lançamentos reais
+const ledgerRoutes = require('./routes/ledger');
+app.use('/api/ledger', ledgerRoutes);
+
 // Middleware de autenticação API key
 function authenticateAPI(req, res, next) {
   const apiKey = req.headers['x-api-key'];

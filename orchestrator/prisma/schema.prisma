@@ -27,6 +27,7 @@ model Transaction {
   pulmao        Int? // 1, 2, ou 3 (nullable se for PJ)
   categoria     String
   confianca     Float // score de classificação (0.0 a 1.0)
+  natureza      String       @default("despesa") // 'despesa' | 'receita' | 'estorno' | 'transferencia'
   origem        String       @default("manual") // 'manual' | 'pdf' | 'pluggy'
   externalId    String?      @unique // id da transação no Pluggy (evita duplicar)
   bankAccountId String?

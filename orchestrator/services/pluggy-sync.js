@@ -110,6 +110,21 @@ function isExpense(tx, accountType) {
   return accountType === 'CREDIT' ? tx.amount > 0 : tx.amount < 0;
 }
 
+/**
+ * despesa | receita | estorno | transferencia — é o que separa consumo de
+ * dinheiro que só trocou de lugar (Pix entre pessoas, pagamento de fatura).
+ */
+// Pagamento de fatura e aplicação/resgate só trocam o dinheiro de lugar
+const MOVES_MONEY = /credit card payment|pagamento de fatura|invest|fund/i;
+
+function natureza(expense, accountType, classification) {
+  const categoria = classification.categoria || '';
+  if (MOVES_MONEY.test(categoria)) return 'transferencia';
+  // Pix recebido (de cliente ou de pessoa) conta como receita; no cartão, crédito é estorno
+  if (!expense) return accountType === 'CREDIT' ? 'estorno' : 'receita';
+  return /transfer/i.test(categoria) ? 'transferencia' : 'despesa';
+}
+
 // ---------- Sync ----------
 
 async function getOwnerUser() {
@@ -196,6 +211,7 @@ async function syncItem(itemId, { contexto, days, reclassify = false } = {}) {
       const classification = expense
         ? classify(description, tx.category, connectionContexto, rules, tx)
         : { pulmao: null, categoria: tx.category || 'Receita', confianca: 0.6 };
+      const kind = natureza(expense, acc.type, classification);
 
       const prev = await prisma.transaction.findUnique({ where: { externalId: tx.id } });
       if (prev) {
@@ -207,6 +223,7 @@ async function syncItem(itemId, { contexto, days, reclassify = false } = {}) {
             data: new Date(tx.date),
             descricao: description,
             valor: Math.abs(tx.amount),
+            natureza: kind,
             ...(reclassify && {
               contexto: connectionContexto,
               pulmao: classification.pulmao,
@@ -224,6 +241,7 @@ async function syncItem(itemId, { contexto, days, reclassify = false } = {}) {
             data: new Date(tx.date),
             descricao: description,
             valor: Math.abs(tx.amount),
+            natureza: kind,
             contexto: connectionContexto,
             pulmao: classification.pulmao,
             categoria: classification.categoria,
